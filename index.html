@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#fff4f6">
+  <title>20/10 — Gửi những đóa hoa 10A7</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --pink: #d95f85;
+      --pink-dark: #ad3d65;
+      --rose: #f5c6d2;
+      --cream: #fffaf5;
+      --paper: #fffdfb;
+      --ink: #593b49;
+      --muted: #987885;
+      --border: #f0d7df;
+      --gold: #f5b742;
+      --shadow: 0 22px 65px rgba(115, 51, 77, .18);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: "Be Vietnam Pro", sans-serif;
+      color: var(--ink);
+      background: #fff7f5;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ---------- CANVAS CÁNH HOA BAY ---------- */
+    #petalCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Chớp sáng khi mở quà */
+    #screenFlash {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 100;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease-out;
+    }
+
+    .app {
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 12% 13%, #f8d9e2b0, transparent 35%),
+        radial-gradient(circle at 88% 75%, #f6dfc4b0, transparent 32%),
+        linear-gradient(135deg, #fff9f6, #fff0f4);
+    }
+
+    .app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: .3;
+      background-image: radial-gradient(#c6849a 0.8px, transparent 0.8px);
+      background-size: 22px 22px;
+      mask-image: linear-gradient(to bottom, black, transparent 92%);
+    }
+
+    /* ---------- TOPBAR ---------- */
+    .topbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px clamp(15px, 4vw, 45px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      color: white;
+      background: linear-gradient(145deg, #e995af, #bb4a75);
+      border-radius: 50%;
+      font-size: 18px;
+      box-shadow: 0 6px 16px #bc4b763a;
+    }
+
+    .date-pill {
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: #fffaf5ea;
+      font-size: 11px;
+      backdrop-filter: blur(4px);
+    }
+
+    .music-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 250, 245, 0.9);
+      backdrop-filter: blur(6px);
+      color: var(--pink-dark);
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: 0 4px 14px rgba(217, 95, 133, 0.15);
+      transition: transform .2s ease;
+    }
+    .music-toggle.playing .disc-icon { animation: spinDisc 3s linear infinite; }
+    @keyframes spinDisc { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* ---------- HERO SECTION ---------- */
+    .hero {
+      position: relative;
+      z-index: 3;
+      min-height: calc(100vh - 75px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 15px 40px;
+      text-align: center;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 3;
+      max-width: 650px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid #edc5d2;
+      border-radius: 999px;
+      color: var(--pink-dark);
+      background: #fffaf5e0;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 12px 0 8px;
+      font: 500 clamp(30px, 7vw, 65px)/1.12 "Playfair Display", serif;
+      letter-spacing: -.02em;
+    }
+
+    .hero h1 span {
+      display: block;
+      margin-top: 4px;
+      color: var(--pink);
+      font-style: italic;
+      background: linear-gradient(135deg, #d95f85, #ad3d65);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-description {
+      max-width: 440px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: clamp(12px, 3.2vw, 13.5px);
+      line-height: 1.75;
+      padding: 0 10px;
+    }
+
+    /* ---------- PHONG BÌ CHÍNH ---------- */
+    .envelope-wrap {
+      position: relative;
+      z-index: 4;
+      width: clamp(270px, 75vw, 340px);
+      height: clamp(190px, 50vw, 230px);
+      margin: 22px auto 0;
+      perspective: 900px;
+    }
+
+    .envelope-glow {
+      position: absolute;
+      inset: 20px 15px 10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #e88eaa6b 0%, transparent 70%);
+      filter: blur(25px);
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+
+    .envelope-button {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      padding: 0;
+      background: transparent;
+      transform-style: preserve-3d;
+      transition: transform .35s ease;
+    }
+    .envelope-button:hover, .envelope-button:active {
+      transform: translateY(-6px) scale(1.02);
+    }
+
+    .envelope {
+      position: absolute;
+      inset: 28px 6px 22px;
+      filter: drop-shadow(0 18px 22px rgba(115, 51, 77, 0.22));
+      transform-style: preserve-3d;
+    }
+
+    .env-back {
+      position: absolute;
+      inset: 0;
+      border: 1px solid #eab9c6;
+      border-radius: 9px;
+      background: #f7d4dc;
+    }
+
+    .env-paper {
+      position: absolute;
+      top: -15px;
+      left: 8%;
+      right: 8%;
+      height: 80%;
+      border: 1px solid #e8cec0;
+      border-radius: 8px;
+      background: linear-gradient(145deg, #fffefb, #fff0e9);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .env-paper .paper-tag {
+      color: #c16a83;
+      font: 700 17px "Playfair Display", serif;
+      letter-spacing: .25em;
+    }
+
+    .env-paper .paper-sub {
+      color: #a27c89;
+      font: italic 10.5px "Playfair Display", Georgia, serif;
+      margin-top: 3px;
+    }
+
+    .env-left {
+      position: absolute;
+      inset: 0;
+      background: #f2c7d1;
+      clip-path: polygon(0 0, 51% 51%, 0 100%);
+      z-index: 2;
+    }
+
+    .env-right {
+      position: absolute;
+      inset: 0;
+      background: #edbac8;
+      clip-path: polygon(100% 0, 49% 51%, 100% 100%);
+      z-index: 2;
+    }
+
+    .env-bottom {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #f7d3db, #ecacbe);
+      clip-path: polygon(0 100%, 50% 43%, 100% 100%);
+      z-index: 3;
+    }
+
+    .env-flap {
+      position: absolute;
+      inset: 0;
+      border-radius: 8px 8px 0 0;
+      background: linear-gradient(155deg, #fbe4e7, #efb5c5);
+      clip-path: polygon(0 0, 100% 0, 50% 61%);
+      transform-origin: top center;
+      z-index: 4;
+    }
+
+    .seal {
+      position: absolute;
+      top: 46%;
+      left: 50%;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #fff1e4;
+      border-radius: 50%;
+      color: white;
+      background: radial-gradient(circle at 30% 25%, #eea1b8, #b83d68);
+      box-shadow: 0 5px 15px rgba(169, 54, 98, 0.35);
+      font-size: 19px;
+      z-index: 5;
+    }
+
+    .envelope-hint {
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      right: 0;
+      color: var(--pink-dark);
+      font-size: 11.5px;
+      font-weight: 700;
+      animation: hintPulse 2s ease-in-out infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    /* ---------- 4 ẢNH BAY 4 GÓC ---------- */
+    .floating-memory {
+      position: absolute;
+      z-index: 2;
+      width: clamp(65px, 16vw, 115px);
+      padding: 5px 5px 12px;
+      border: 1px solid #f1dfd7;
+      border-radius: 6px;
+      background: #fffaf5;
+      box-shadow: 0 10px 22px rgba(96, 48, 67, 0.12);
+      transform: rotate(var(--tilt, 5deg));
+      animation: photoFloat 7s ease-in-out infinite;
+      transition: transform .3s ease;
+      cursor: pointer;
+    }
+    .floating-memory:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
+
+    .floating-memory .art {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 4px;
+      background: var(--art-bg, linear-gradient(135deg, #f7d5df, #f3bdc5));
+      color: white;
+      font-size: clamp(22px, 5vw, 30px);
+    }
+    .floating-memory img { width: 100%; height: 100%; position: absolute; inset: 0; object-fit: cover; }
+
+    .memory-caption {
+      margin: 5px 0 0;
+      color: #a86d80;
+      font: italic 9.5px Georgia, serif;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .memory-1 { top: 8%; left: 3%; --tilt: -7deg; }
+    .memory-2 { top: 11%; right: 3%; --tilt: 7deg; animation-delay: -2s; }
+    .memory-3 { bottom: 8%; left: 4%; --tilt: 6deg; animation-delay: -4s; }
+    .memory-4 { bottom: 7%; right: 4%; --tilt: -7deg; animation-delay: -1.3s; }
+
+    .bottom-caption {
+      position: absolute;
+      bottom: 12px;
+      left: 0;
+      right: 0;
+      color: var(--muted);
+      font-size: 9.5px;
+      letter-spacing: .12em;
+    }
+
+    /* ============================================================
+       BONG BÓNG LỜI CHÚC TRÔI LƠ LỬNG TỰ DO DỌC 2 LỀ (KHÔNG VA CHỮ/THƯ)
+       ============================================================ */
+    .wish-bubbles-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+      display: none;
+    }
+
+    .app.after-letter .wish-bubbles-container { display: block; }
+
+    .floating-bubble {
+      position: absolute;
+      bottom: -60px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255, 250, 247, 0.9);
+      border: 1px solid rgba(232, 142, 170, 0.5);
+      box-shadow: 0 8px 24px rgba(173, 61, 101, 0.12), inset 0 0 10px rgba(255, 255, 255, 0.9);
+      color: #9d335b;
+      font-size: clamp(10px, 2.7vw, 11.5px);
+      font-weight: 700;
+      backdrop-filter: blur(5px);
+      white-space: nowrap;
+      pointer-events: auto;
+      cursor: pointer;
+      user-select: none;
+      animation: bubbleFloatUp linear infinite;
+    }
+    .floating-bubble:hover {
+      transform: scale(1.08) !important;
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(173, 61, 101, 0.25);
+    }
+
+    /* Các vị trí X chỉ nằm ở 2 dải lề an toàn */
+    .bubble-1 { left: 3%; animation-duration: 22s; animation-delay: 0s; }
+    .bubble-2 { right: 4%; animation-duration: 25s; animation-delay: 3s; }
+    .bubble-3 { left: 8%; animation-duration: 28s; animation-delay: 9s; }
+    .bubble-4 { right: 6%; animation-duration: 24s; animation-delay: 14s; }
+    .bubble-5 { left: 4%; animation-duration: 26s; animation-delay: 17s; }
+
+    @keyframes bubbleFloatUp {
+      0% { transform: translateY(0) translateX(0) scale(0.9); opacity: 0; }
+      10% { opacity: 0.95; }
+      50% { transform: translateY(-50vh) translateX(12px) scale(1); }
+      85% { opacity: 0.95; }
+      100% { transform: translateY(-110vh) translateX(-10px) scale(0.95); opacity: 0; }
+    }
+
+    /* ============================================================
+       HỘP QUÀ 3D ISOMETRIC VECTOR CAO CẤP & ANIMATION BẬT NẮP
+       ============================================================ */
+    .gift-modal {
+      text-align: center;
+      padding: 30px 15px;
+      overflow: visible !important;
+    }
+
+    .gift-stage-wrapper {
+      position: relative;
+      width: 220px;
+      height: 220px;
+      margin: 15px auto 10px;
+      cursor: pointer;
+    }
+
+    .gift-halo {
+      position: absolute;
+      inset: -15px;
+      background: radial-gradient(circle, rgba(235, 110, 150, 0.38) 0%, rgba(255, 214, 112, 0.2) 45%, transparent 70%);
+      filter: blur(25px);
+      border-radius: 50%;
+      animation: haloGlow 3s infinite ease-in-out;
+      pointer-events: none;
+    }
+    @keyframes haloGlow {
+      0%, 100% { transform: scale(0.92); opacity: 0.7; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+
+    /* Container cho SVG hộp quà */
+    .isometric-gift-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(0 15px 25px rgba(168, 50, 89, 0.28));
+      animation: giftIdle 3.2s ease-in-out infinite;
+      transition: transform 0.3s ease;
+    }
+
+    @keyframes giftIdle {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Khi người dùng chạm: Nhún xuống lấy đà (Anticipate) */
+    .isometric-gift-svg.anticipate {
+      animation: giftSquash 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both !important;
+    }
+    @keyframes giftSquash {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08, 0.88) translateY(8px); }
+      100% { transform: scale(0.96, 1.04) translateY(-4px); }
+    }
+
+    /* NẮP HỘP BẬT TUNG BAY LÊN TRỜI */
+    #svgLidGroup {
+      transform-origin: 110px 85px;
+      transition: transform 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.5s ease 0.3s;
+    }
+
+    .isometric-gift-svg.opened #svgLidGroup {
+      transform: translate(-35px, -100px) rotate(-35deg) scale(0.92);
+      opacity: 0;
+    }
+
+    /* CỘT SÁNG & NGÔI SAO PHÓNG TỪ TRONG HỘP RA */
+    #svgLightBeam {
+      transform-origin: 110px 105px;
+      transform: scaleY(0);
+      opacity: 0;
+      transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.5s ease;
+    }
+    .isometric-gift-svg.opened #svgLightBeam {
+      transform: scaleY(1);
+      opacity: 1;
+    }
+
+    .gift-tap-guide {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 18px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffedf2, #ffe4ec);
+      border: 1px dashed var(--pink);
+      color: var(--pink-dark);
+      font-weight: 700;
+      font-size: 12px;
+      animation: hintPulse 1.8s infinite;
+    }
+
+    /* ---------- CÁC CỬA SỔ MODAL ---------- */
+    .veil {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      place-items: center;
+      padding: 15px;
+      background: rgba(52, 25, 43, 0.55);
+      backdrop-filter: blur(8px);
+    }
+    .veil.visible { display: grid; animation: fadeIn .28s ease both; }
+
+    .modal {
+      position: relative;
+      width: min(560px, 94vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: clamp(20px, 5vw, 36px);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      animation: modalRise .4s cubic-bezier(.2, .75, .2, 1) both;
+    }
+
+    .close-button {
+      position: sticky;
+      z-index: 2;
+      top: 0;
+      float: right;
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin: -6px -4px 0 auto;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--muted);
+      background: #fff3f4;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .kicker {
+      color: var(--pink-dark);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* ---------- TRÌNH CHIẾU CUỘN PHIM ---------- */
+    .film-modal { width: min(720px, 94vw); }
+    .film-heading { text-align: center; }
+
+    .film-stage {
+      position: relative;
+      display: grid;
+      min-height: clamp(300px, 50vh, 400px);
+      place-items: center;
+      margin-top: 16px;
+      overflow: hidden;
+      border: 1px solid #edcbd4;
+      border-radius: 20px;
+      background: radial-gradient(ellipse at center, #fffdfb, #fce8ed 60%, #f2d2df);
+      box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.5);
+    }
+
+    .film-card {
+      position: relative;
+      z-index: 2;
+      width: min(340px, 82%);
+      padding: 10px 10px 16px;
+      border: 6px solid #493343;
+      border-radius: 8px;
+      background: #fffaf5;
+      box-shadow: 0 20px 45px rgba(68, 35, 57, 0.3);
+      animation: photoPopOut 0.85s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+    }
+
+    @keyframes photoPopOut {
+      0% { opacity: 0; transform: translateY(120px) scale(0.5) rotate(-10deg); }
+      70% { transform: translateY(-8px) scale(1.03) rotate(1deg); }
+      100% { opacity: 1; transform: translateY(0) scale(1) rotate(-1.5deg); }
+    }
+
+    .film-photo {
+      position: relative;
+      display: grid;
+      height: clamp(170px, 32vh, 230px);
+      place-items: center;
+      overflow: hidden;
+      border-radius: 4px;
+      color: white;
+      background: linear-gradient(135deg, #f2bfd0, #dfb0c4);
+      font-size: 50px;
+    }
+    .film-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+    .film-title {
+      margin: 10px 0 0;
+      color: #a35776;
+      font: italic 16px "Playfair Display", Georgia, serif;
+      text-align: center;
+    }
+
+    .film-counter {
+      margin-top: 14px;
+      color: #9e6178;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-align: center;
+    }
+
+    .film-progress {
+      max-width: 280px;
+      height: 5px;
+      margin: 10px auto 0;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--border);
+    }
+    .film-progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      background: linear-gradient(90deg, var(--pink), #ad3d65);
+      border-radius: 999px;
+    }
+
+    /* ---------- THẺ MA THUẬT CHỌN THƯ / ẢNH ---------- */
+    .magic-choice-modal { width: min(650px, 94vw); text-align: center; }
+
+    .magic-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+      margin-top: 22px;
+    }
+
+    .magic-select-card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 24px 15px;
+      border-radius: 22px;
+      background: linear-gradient(145deg, #ffffff, #fff3f6);
+      border: 2px solid transparent;
+      box-shadow: 0 12px 28px rgba(184, 68, 108, 0.12);
+      transition: all .35s cubic-bezier(0.2, 0.8, 0.3, 1);
+      overflow: hidden;
+    }
+
+    .magic-select-card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #e88eaa, #fad0c4, #ffd1ff);
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    .magic-select-card:hover, .magic-select-card:active {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 18px 38px rgba(184, 68, 108, 0.28);
+    }
+
+    .card-badge {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #fae2e8;
+      color: #ad3d65;
+    }
+
+    .card-3d-icon {
+      font-size: 42px;
+      display: grid;
+      place-items: center;
+      filter: drop-shadow(0 6px 12px rgba(184, 68, 108, 0.25));
+    }
+
+    .magic-select-card strong {
+      font: 600 19px "Playfair Display", serif;
+      color: #88405d;
+    }
+
+    .magic-select-card small {
+      color: #96717e;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* ---------- GIAO DIỆN THƯ & ALBUM ---------- */
+    .content-modal { width: min(700px, 94vw); }
+
+    .letter-paper {
+      margin-top: 16px;
+      padding: clamp(16px, 4vw, 28px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background:
+        linear-gradient(#fffaf5f5, #fffaf5f5),
+        repeating-linear-gradient(0deg, #f4dfe4 0 1px, transparent 1px 30px);
+    }
+
+    .wish-text {
+      color: #5d3b49;
+      white-space: pre-line;
+      font: clamp(14px, 3.2vw, 15.5px)/2.1 "Playfair Display", Georgia, serif;
+      min-height: 140px;
+    }
+
+    .wish-sign {
+      margin-top: 18px;
+      color: var(--pink-dark);
+      font: italic 15px "Playfair Display", Georgia, serif;
+      text-align: right;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .gallery-tile {
+      padding: 6px 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: #fffdfb;
+      box-shadow: 0 6px 15px rgba(87, 42, 62, 0.08);
+      cursor: zoom-in;
+    }
+
+    .gallery-art {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 4px;
+      color: white;
+      background: var(--art-bg, linear-gradient(145deg, #f6c9d5, #efd7c8));
+      font-size: 28px;
+    }
+    .gallery-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+    .gallery-caption {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font: italic 10px Georgia, serif;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .primary-button, .secondary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      transition: transform .2s ease;
+    }
+    .primary-button {
+      color: white;
+      background: linear-gradient(130deg, #e06d8f, #b8446c);
+      box-shadow: 0 8px 18px rgba(184, 68, 108, 0.3);
+    }
+    .secondary-button {
+      border: 1px solid var(--border);
+      color: var(--pink-dark);
+      background: #fff1f4;
+    }
+
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none;
+      place-items: center;
+      padding: 15px;
+      background: rgba(35, 18, 29, 0.9);
+      backdrop-filter: blur(8px);
+      cursor: zoom-out;
+    }
+    .lightbox.visible { display: grid; }
+    .lightbox img {
+      max-width: 94vw;
+      max-height: 85vh;
+      border: 6px solid var(--cream);
+      border-radius: 6px;
+      object-fit: contain;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 16px;
+      right: 18px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      color: white;
+      background: rgba(255, 255, 255, 0.2);
+      font-size: 22px;
+    }
+
+    /* KEYFRAMES */
+    @keyframes photoFloat {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -12px; }
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: .4; transform: scale(.95); }
+      50% { opacity: .9; transform: scale(1.08); }
+    }
+    @keyframes hintPulse {
+      0%, 100% { opacity: .7; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-3px); }
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes modalRise {
+      from { opacity: 0; transform: translateY(20px) scale(.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @media (max-width: 650px) {
+      .topbar { padding: 12px 14px; }
+      .date-pill { display: none; }
+      .hero { min-height: calc(100svh - 60px); }
+      .magic-card-grid { grid-template-columns: 1fr; gap: 12px; }
+      .magic-select-card { flex-direction: row; text-align: left; padding: 14px 18px; }
+      .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .bubble-3, .bubble-5 { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- CÁNH HOA VÀ MÀN HÌNH CHỚP SÁNG -->
+<canvas id="petalCanvas"></canvas>
+<div id="screenFlash"></div>
+
+<!-- NHẠC NỀN DU DƯƠNG -->
+<audio id="bgMusic" loop preload="auto">
+  <source src="https://assets.mixkit.co/music/preview/mixkit-romantic-moment-1108.mp3" type="audio/mp3">
+</audio>
+
+<div class="app" id="appRoot">
+
+  <!-- ============================================================
+       BONG BÓNG LỜI CHÚC TRÔI LƠ LỬNG TỰ DO DỌC 2 BÊN LỀ (KHÔNG VA VÀO CHỮ/THƯ)
+       ============================================================ -->
+  <div class="wish-bubbles-container" id="bubblesContainer">
+    <div class="floating-bubble bubble-1"><span>🌸</span> Luôn rạng rỡ như ánh nắng mai</div>
+    <div class="floating-bubble bubble-2"><span>🌷</span> Mong mọi điều dịu dàng đến với cậu</div>
+    <div class="floating-bubble bubble-3"><span>✨</span> 10A7 gửi cậu thật nhiều may mắn</div>
+    <div class="floating-bubble bubble-4"><span>💖</span> Hãy luôn tự tin và vui vẻ nhé</div>
+    <div class="floating-bubble bubble-5"><span>💐</span> Cậu là đóa hoa xinh đẹp nhất</div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">✿</span>
+      <span>Thương gửi 10A7</span>
+    </div>
+    <div class="date-pill">20.10 · Một ngày dành cho những đóa hoa</div>
+    <button class="music-toggle" id="musicToggle" aria-label="Bật/Tắt nhạc">
+      <span class="disc-icon">💿</span>
+      <span id="musicStatus">Nhạc</span>
+    </button>
+  </header>
+
+  <main class="hero">
+    <!-- 4 ẢNH BAY 4 GÓC -->
+    <div class="floating-memory memory-1" data-card-index="0">
+      <div class="art" data-float-index="0">🌷</div>
+      <p class="memory-caption">thật xinh</p>
+    </div>
+
+    <div class="floating-memory memory-2" data-card-index="1">
+      <div class="art" data-float-index="1">📸</div>
+      <p class="memory-caption">thanh xuân</p>
+    </div>
+
+    <div class="floating-memory memory-3" data-card-index="2">
+      <div class="art" data-float-index="2">🌼</div>
+      <p class="memory-caption">nụ cười 10A7</p>
+    </div>
+
+    <div class="floating-memory memory-4" data-card-index="3">
+      <div class="art" data-float-index="3">💐</div>
+      <p class="memory-caption">trao bạn hoa</p>
+    </div>
+
+    <section class="hero-copy">
+      <span class="eyebrow">✿ 20 THÁNG 10 · NGÀY CỦA BẠN ✿</span>
+      <h1>Một món quà nhỏ <span>cho những đóa hoa</span></h1>
+      <p class="hero-description">
+        Dành tặng các bạn nữ 10A7 — những người làm cho mỗi ngày đến lớp
+        ngập tràn niềm vui, tiếng cười và sự dịu dàng.
+      </p>
+    </section>
+
+    <!-- PHONG BÌ CHÍNH -->
+    <div class="envelope-wrap" id="envelopeWrap">
+      <div class="envelope-glow"></div>
+
+      <button class="envelope-button" id="openEnvelopeBtn" aria-label="Mở phong bì">
+        <span class="envelope" aria-hidden="true">
+          <span class="env-back"></span>
+          <span class="env-paper">
+            <span class="paper-tag">10A7</span>
+            <span class="paper-sub">điều dịu dàng nhất ♡</span>
+          </span>
+          <span class="env-left"></span>
+          <span class="env-right"></span>
+          <span class="env-bottom"></span>
+          <span class="env-flap"></span>
+          <span class="seal">♥</span>
+        </span>
+      </button>
+
+      <div class="envelope-hint">
+        <span>Chạm vào phong bì để nhận quà</span> <span>↗</span>
+      </div>
+    </div>
+
+    <div class="bottom-caption">
+      GÓI GHÉM YÊU THƯƠNG · GỬI TỪ NHỮNG CHÀNG TRAI 10A7
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     1. MODAL HỘP QUÀ 3D ISOMETRIC VECTOR SẮC NÉT & BẬT NẮP
+     ============================================================ -->
+<div class="veil" id="giftModal" role="dialog" aria-modal="true">
+  <section class="modal gift-modal">
+    <button class="close-button" data-action="close-all" aria-label="Đóng">×</button>
+    <div class="kicker">Món quà bí mật dành riêng cho bạn</div>
+    <h2 style="font-family:'Playfair Display',serif; margin-top: 6px;">Hộp quà thanh xuân 10A7</h2>
+    <p style="font-size:12.5px; color:var(--muted); margin-top: 4px;">
+      Chạm vào hộp quà để mở điều bất ngờ bên trong nhé!
+    </p>
+
+    <!-- KHÔNG GIAN HỘP QUÀ 3D ISOMETRIC -->
+    <div class="gift-stage-wrapper" id="giftStageWrapper">
+      <div class="gift-halo"></div>
+
+      <svg class="isometric-gift-svg" id="giftSvg" viewBox="0 0 220 220">
+        <defs>
+          <!-- Gradient đổ màu hộp quà -->
+          <linearGradient id="bodyLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ea5a84" />
+            <stop offset="100%" stop-color="#b83058" />
+          </linearGradient>
+          <linearGradient id="bodyRight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f67fa4" />
+            <stop offset="100%" stop-color="#d64972" />
+          </linearGradient>
+
+          <!-- Gradient ruy băng vàng kim -->
+          <linearGradient id="goldRibbonLeft" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffe699" />
+            <stop offset="50%" stop-color="#f5b742" />
+            <stop offset="100%" stop-color="#d99316" />
+          </linearGradient>
+          <linearGradient id="goldRibbonRight" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffd566" />
+            <stop offset="50%" stop-color="#f5b742" />
+            <stop offset="100%" stop-color="#ffe8a3" />
+          </linearGradient>
+
+          <!-- Gradient mặt nắp hộp -->
+          <linearGradient id="lidTopGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f6739b" />
+            <stop offset="100%" stop-color="#ffaec4" />
+          </linearGradient>
+          <linearGradient id="lidSideLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#df4371" />
+            <stop offset="100%" stop-color="#b12951" />
+          </linearGradient>
+          <linearGradient id="lidSideRight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f5628e" />
+            <stop offset="100%" stop-color="#c93761" />
+          </linearGradient>
+
+          <!-- Cột ánh sáng ma thuật phát ra từ trong lòng hộp -->
+          <linearGradient id="beamGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+            <stop offset="0%" stop-color="rgba(255, 230, 130, 0.95)" />
+            <stop offset="50%" stop-color="rgba(255, 180, 205, 0.5)" />
+            <stop offset="100%" stop-color="rgba(255, 255, 255, 0)" />
+          </linearGradient>
+        </defs>
+
+        <!-- Bóng đổ trên sàn -->
+        <ellipse cx="110" cy="190" rx="72" ry="16" fill="rgba(168, 50, 89, 0.22)" filter="blur(3px)" />
+
+        <!-- Cột sáng thần tiên (bình thường ẩn, khi mở nắp sẽ phóng vút lên) -->
+        <polygon id="svgLightBeam" points="80,110 140,110 195,0 25,0" fill="url(#beamGradient)" />
+
+        <!-- THÂN HỘP QUÀ -->
+        <g id="svgGiftBody">
+          <!-- Lòng trong hộp (khi mở nắp nhìn thấy) -->
+          <polygon points="110,68 170,98 110,128 50,98" fill="#751838" />
+
+          <!-- Mặt trái thân -->
+          <polygon points="50,98 110,128 110,185 50,155" fill="url(#bodyLeft)" />
+          <!-- Ruy băng mặt trái -->
+          <polygon points="75,110 88,117 88,174 75,167" fill="url(#goldRibbonLeft)" />
+
+          <!-- Mặt phải thân -->
+          <polygon points="110,128 170,98 170,155 110,185" fill="url(#bodyRight)" />
+          <!-- Ruy băng mặt phải -->
+          <polygon points="132,117 145,110 145,167 132,174" fill="url(#goldRibbonRight)" />
+
+          <!-- Đường viền ranh giới tạo chiều sâu -->
+          <line x1="110" y1="128" x2="110" y2="185" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+        </g>
+
+        <!-- NẮP HỘP QUÀ + NƠ 3D (TÁCH BIỆT ĐỂ BẬT TUNG KHI CHẠM) -->
+        <g id="svgLidGroup">
+          <!-- Viền gờ nắp bên trái -->
+          <polygon points="44,95 110,128 110,140 44,107" fill="url(#lidSideLeft)" />
+          <!-- Ruy băng viền trái -->
+          <polygon points="72,109 85,115 85,128 72,121" fill="url(#goldRibbonLeft)" />
+
+          <!-- Viền gờ nắp bên phải -->
+          <polygon points="110,128 176,95 176,107 110,140" fill="url(#lidSideRight)" />
+          <!-- Ruy băng viền phải -->
+          <polygon points="135,115 148,109 148,121 135,128" fill="url(#goldRibbonRight)" />
+
+          <!-- Mặt trên của nắp (hình thoi 3D hoàn hảo) -->
+          <polygon points="110,62 176,95 110,128 44,95" fill="url(#lidTopGrad)" stroke="#ffccd7" stroke-width="1" />
+
+          <!-- Ruy băng chữ thập vàng trên mặt nắp -->
+          <polygon points="104,65 116,71 82,114 70,108" fill="url(#goldRibbonLeft)" />
+          <polygon points="116,65 104,71 138,114 150,108" fill="url(#goldRibbonRight)" />
+
+          <!-- CHIẾC NƠ 3D BỒNG BỀNH -->
+          <!-- Cánh nơ trái -->
+          <path d="M110,95 C85,65 60,82 82,95 C98,102 108,96 110,95 Z" fill="url(#goldRibbonLeft)" stroke="#ffd778" stroke-width="1.5" />
+          <path d="M85,82 C95,88 102,94 105,95" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.6" />
+
+          <!-- Cánh nơ phải -->
+          <path d="M110,95 C135,65 160,82 138,95 C122,102 112,96 110,95 Z" fill="url(#goldRibbonRight)" stroke="#ffd778" stroke-width="1.5" />
+          <path d="M135,82 C125,88 118,94 115,95" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.6" />
+
+          <!-- Đuôi ruy băng buông rủ -->
+          <path d="M106,97 Q90,115 82,126 Q92,120 108,102 Z" fill="#e09819" opacity="0.85" />
+          <path d="M114,97 Q130,115 138,126 Q128,120 112,102 Z" fill="#e09819" opacity="0.85" />
+
+          <!-- Nút thắt nơ tròn ở giữa có ngọc phát sáng -->
+          <circle cx="110" cy="95" r="9" fill="url(#goldRibbonRight)" stroke="#ffeaa7" stroke-width="2" />
+          <circle cx="108" cy="93" r="3" fill="#ffffff" opacity="0.8" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="gift-tap-guide">👇 Chạm vào hộp quà để mở nắp ✨</div>
+  </section>
+</div>
+
+<!-- 2. TRÌNH CHIẾU CUỘN PHIM -->
+<div class="veil" id="filmModal" role="dialog" aria-modal="true">
+  <section class="modal film-modal">
+    <button class="close-button" data-action="film-to-menu" aria-label="Bỏ qua">×</button>
+
+    <div class="film-heading">
+      <div class="kicker">Cuộn phim thanh xuân 10A7</div>
+      <h2 style="font-family:'Playfair Display',serif; margin-top: 4px;">Khoảnh khắc của chúng mình</h2>
+    </div>
+
+    <div class="film-stage">
+      <div class="film-card" id="filmCard">
+        <div class="film-photo" id="filmPhoto">🌸</div>
+        <div class="film-title" id="filmTitle">Kỷ niệm đáng nhớ</div>
+      </div>
+    </div>
+
+    <div class="film-counter" id="filmCounter">KHOẢNH KHẮC 01 / 06</div>
+    <div class="film-progress"><span id="filmProgress"></span></div>
+
+    <div class="button-row">
+      <button class="secondary-button" id="replayFilmBtn">↺ Xem lại</button>
+      <button class="primary-button" id="skipFilmBtn">Xem thư & ảnh →</button>
+    </div>
+  </section>
+</div>
+
+<!-- 3. MENU THẺ MA THUẬT -->
+<div class="veil" id="choiceModal" role="dialog" aria-modal="true">
+  <section class="modal magic-choice-modal">
+    <button class="close-button" data-action="close-choice" aria-label="Đóng">×</button>
+
+    <div class="kicker">Món quà từ trái tim 10A7</div>
+    <h2 style="font-family:'Playfair Display',serif; margin-top: 5px;">Bạn muốn khám phá điều gì?</h2>
+    <p style="font-size:12.5px; color:var(--muted); margin-top: 4px;">
+      Chọn một trong hai cánh cổng ma thuật bên dưới:
+    </p>
+
+    <div class="magic-card-grid">
+      <button class="magic-select-card" id="openWishBtn">
+        <span class="card-badge">Tâm tình gửi bạn</span>
+        <div class="card-3d-icon">💌</div>
+        <div>
+          <strong>Bức thư chân thành</strong>
+          <small style="display:block; margin-top: 3px;">Những lời chúc đong đầy từ tập thể con trai 10A7</small>
+        </div>
+      </button>
+
+      <button class="magic-select-card" id="openGalleryBtn">
+        <span class="card-badge">Kho báu thanh xuân</span>
+        <div class="card-3d-icon">📸</div>
+        <div>
+          <strong>Album kỷ niệm</strong>
+          <small style="display:block; margin-top: 3px;">Nơi cất giữ những khoảnh khắc đáng yêu của lớp</small>
+        </div>
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- 4. GIAO DIỆN ĐỌC THƯ -->
+<div class="veil" id="wishModal" role="dialog" aria-modal="true">
+  <section class="modal content-modal">
+    <button class="close-button" data-action="close-wish" aria-label="Đóng">×</button>
+
+    <div style="text-align:center;">
+      <div class="kicker">Những lời nhắn gửi</div>
+      <h2 style="font-family:'Playfair Display',serif; margin-top: 4px;">Gửi những đóa hoa 10A7</h2>
+    </div>
+
+    <div class="letter-paper">
+      <div class="wish-text" id="wishText"></div>
+      <div class="wish-sign">— Từ các chàng trai 10A7 thân thương ♡</div>
+    </div>
+
+    <div class="button-row">
+      <button class="secondary-button" id="fastTextBtn">Hiện hết lời chúc ⚡</button>
+      <button class="primary-button" data-action="back-to-menu">← Trở lại</button>
+    </div>
+  </section>
+</div>
+
+<!-- 5. GIAO DIỆN ALBUM ẢNH -->
+<div class="veil" id="galleryModal" role="dialog" aria-modal="true">
+  <section class="modal content-modal">
+    <button class="close-button" data-action="gallery-to-menu" aria-label="Trở lại">×</button>
+
+    <div style="text-align:center;">
+      <div class="kicker">Album ảnh kỷ niệm</div>
+      <h2 style="font-family:'Playfair Display',serif; margin-top: 4px;">Khoảnh khắc 10A7</h2>
+    </div>
+
+    <div class="letter-paper">
+      <div class="gallery-grid" id="galleryGrid"></div>
+      <p style="margin-top:12px; text-align:center; font-size:11px; color:var(--muted)">
+        💡 Chạm vào ảnh bất kỳ để phóng to nhé.
+      </p>
+    </div>
+
+    <div class="button-row">
+      <button class="secondary-button" data-action="gallery-to-menu">← Trở lại</button>
+    </div>
+  </section>
+</div>
+
+<!-- LIGHTBOX XEM ẢNH TO -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="closeLightbox">×</button>
+  <img id="lightboxImage" alt="Ảnh phóng to">
+</div>
+
+<script>
+/*
+============================================================
+BẠN CÓ THỂ THÊM BỚT SỐ LƯỢNG ẢNH TÙY Ý Ở DƯỚI ĐÂY:
+============================================================
+*/
+const memories = [
+  {
+    title: "Một ngày thật vui",
+    emoji: "🌷",
+    bg: "linear-gradient(135deg,#f6ccd5,#f5e3d5)",
+    src: "" // Điền đường dẫn ảnh, ví dụ: "images/anh1.jpg"
+  },
+  {
+    title: "Bạn bè & tiếng cười",
+    emoji: "📸",
+    bg: "linear-gradient(135deg,#dfc2dc,#f8d8cc)",
+    src: ""
+  },
+  {
+    title: "Thanh xuân 10A7",
+    emoji: "🌼",
+    bg: "linear-gradient(135deg,#f7d7a8,#f2bfc9)",
+    src: ""
+  },
+  {
+    title: "Những điều dịu dàng",
+    emoji: "💐",
+    bg: "linear-gradient(135deg,#f0c5d1,#ded2ed)",
+    src: ""
+  },
+  {
+    title: "Một phần kỷ niệm",
+    emoji: "💗",
+    bg: "linear-gradient(135deg,#f4d1dc,#f7e3c9)",
+    src: ""
+  },
+  {
+    title: "Mãi là bạn bè",
+    emoji: "✨",
+    bg: "linear-gradient(135deg,#e1d4ed,#f3c8d6)",
+    src: ""
+  }
+];
+
+const RAW_WISH = `Gửi các bạn nữ thân yêu của 10A7,
+
+Nhân ngày 20/10, chúc các bạn luôn nở nụ cười rạng rỡ, tự tin với chính mình và đón nhận thật nhiều niềm vui, sự tử tế từ cuộc sống.
+
+Mong rằng mỗi ngày đến lớp cùng 10A7 đều có thật nhiều kỷ niệm đáng nhớ và tiếng cười. Cảm ơn các bạn vì đã là những mảnh ghép xinh đẹp và dịu dàng nhất của lớp chúng mình.
+
+Chúc các bạn có một ngày 20/10 thật ngập tràn hoa, quà và tình yêu thương! 🌷✨`;
+
+const FILM_DURATION = 2800;
+const $ = id => document.getElementById(id);
+
+const appRoot = $("appRoot");
+const bgMusic = $("bgMusic");
+const musicToggle = $("musicToggle");
+const musicStatus = $("musicStatus");
+const screenFlash = $("screenFlash");
+const giftSvg = $("giftSvg");
+
+const modalIds = ["giftModal", "filmModal", "choiceModal", "wishModal", "galleryModal"];
+
+let filmIndex = 0;
+let filmTimer = null;
+let progressTimer = null;
+let currentSlideStarted = 0;
+let typeInterval = null;
+let isPlaying = false;
+
+/* ---------- ÂM THANH SYNTH TỰ TẠO (WEB AUDIO API) ---------- */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function playSound(freq = 600, type = "sine", duration = 0.4) {
+  try {
+    if (!audioCtx) audioCtx = new AudioCtx();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.6, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch(e) {}
+}
+
+/* ---------- TRÌNH PHÁT NHẠC NỀN ---------- */
+function toggleMusic() {
+  if (isPlaying) {
+    bgMusic.pause();
+    musicToggle.classList.remove("playing");
+    musicStatus.textContent = "Nhạc";
+    isPlaying = false;
+  } else {
+    bgMusic.play().then(() => {
+      musicToggle.classList.add("playing");
+      musicStatus.textContent = "Bật";
+      isPlaying = true;
+    }).catch(() => {});
+  }
+}
+musicToggle.addEventListener("click", toggleMusic);
+
+/* ---------- CANVAS CÁNH HOA BAY ---------- */
+const canvas = $("petalCanvas");
+const ctx = canvas.getContext("2d");
+let petals = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+class Petal {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = -20 - Math.random() * 40;
+    this.size = 8 + Math.random() * 9;
+    this.speedY = 1.1 + Math.random() * 1.5;
+    this.speedX = -0.8 + Math.random() * 1.6;
+    this.angle = Math.random() * 360;
+    this.angleSpeed = (Math.random() - 0.5) * 1.5;
+    this.color = ["#fca5a5", "#fbcfe8", "#fda4af"][Math.floor(Math.random() * 3)];
+    this.alpha = 0.4 + Math.random() * 0.4;
+  }
+  update() {
+    this.y += this.speedY;
+    this.x += Math.sin(this.y * 0.015) + this.speedX * 0.4;
+    this.angle += this.angleSpeed;
+    if (this.y > canvas.height + 20) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate((this.angle * Math.PI) / 180);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = this.alpha;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(this.size / 2, -this.size / 2, this.size, 0);
+    ctx.quadraticCurveTo(this.size / 2, this.size / 2, 0, 0);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+for (let i = 0; i < 30; i++) {
+  const p = new Petal();
+  p.y = Math.random() * canvas.height;
+  petals.push(p);
+}
+
+function animatePetals() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  petals.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animatePetals);
+}
+animatePetals();
+
+/* ---------- PHÁO HOA KIM TUYẾN CONFETTI ---------- */
+function burstConfetti(x, y) {
+  playSound(720, "triangle", 0.5);
+  for (let i = 0; i < 28; i++) {
+    const el = document.createElement("div");
+    el.textContent = Math.random() > 0.4 ? "♥" : (Math.random() > 0.5 ? "🌸" : "✨");
+    el.style.position = "fixed";
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    el.style.fontSize = `${14 + Math.random() * 16}px`;
+    el.style.color = ["#e85d88", "#f43f5e", "#ff85a2", "#d4af37", "#f59e0b"][Math.floor(Math.random() * 5)];
+    el.style.pointerEvents = "none";
+    el.style.zIndex = "120";
+    el.style.transform = `translate(-50%, -50%)`;
+
+    const angle = Math.random() * Math.PI * 2;
+    const velocity = 55 + Math.random() * 125;
+    const destX = Math.cos(angle) * velocity;
+    const destY = Math.sin(angle) * velocity - 25;
+
+    document.body.appendChild(el);
+
+    el.animate([
+      { transform: `translate(-50%, -50%) scale(0.6)`, opacity: 1 },
+      { transform: `translate(calc(-50% + ${destX}px), calc(-50% + ${destY}px)) scale(1.15) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+    ], {
+      duration: 850 + Math.random() * 400,
+      easing: "cubic-bezier(0.2, 0.8, 0.3, 1)"
+    }).onfinish = () => el.remove();
+  }
+}
+
+/* ---------- QUẢN LÝ MODAL ---------- */
+function hideAllModals() {
+  modalIds.forEach(id => $(id).classList.remove("visible"));
+}
+
+function showModal(id) {
+  hideAllModals();
+  $(id).classList.add("visible");
+  appRoot.classList.remove("after-letter");
+}
+
+function stopFilm() {
+  clearInterval(filmTimer);
+  clearInterval(progressTimer);
+  filmTimer = null;
+  progressTimer = null;
+}
+
+function returnToMenu() {
+  stopFilm();
+  renderGallery();
+  showModal("choiceModal");
+}
+
+function showAfterLetter() {
+  stopFilm();
+  hideAllModals();
+  appRoot.classList.add("after-letter");
+}
+
+/* ---------- HIỂN THỊ ẢNH ---------- */
+function paintArt(element, item) {
+  element.innerHTML = "";
+  element.style.setProperty("--art-bg", item.bg || "linear-gradient(135deg,#f6ccd5,#f5e3d5)");
+  if (item.src) {
+    const img = document.createElement("img");
+    img.src = item.src;
+    img.alt = item.title;
+    img.onerror = () => { img.remove(); element.textContent = item.emoji || "🌸"; };
+    element.appendChild(img);
+  } else {
+    element.textContent = item.emoji || "🌸";
+  }
+}
+
+function renderAmbientPhotos() {
+  document.querySelectorAll("[data-float-index]").forEach((el, i) => {
+    paintArt(el, memories[i % memories.length]);
+  });
+}
+
+function renderGallery() {
+  const grid = $("galleryGrid");
+  grid.innerHTML = "";
+  memories.forEach((item) => {
+    const tile = document.createElement("div");
+    tile.className = "gallery-tile";
+    const art = document.createElement("div");
+    art.className = "gallery-art";
+    paintArt(art, item);
+    const cap = document.createElement("p");
+    cap.className = "gallery-caption";
+    cap.textContent = item.title;
+    tile.append(art, cap);
+    grid.appendChild(tile);
+  });
+}
+
+/* ---------- TRÌNH CHIẾU CUỘN PHIM ---------- */
+function showFilmMoment(index) {
+  filmIndex = index;
+  const item = memories[filmIndex];
+  paintArt($("filmPhoto"), item);
+  $("filmTitle").textContent = item.title;
+  $("filmCounter").textContent = `KHOẢNH KHẮC ${String(filmIndex + 1).padStart(2, "0")} / ${String(memories.length).padStart(2, "0")}`;
+
+  const card = $("filmCard");
+  card.style.animation = "none";
+  void card.offsetWidth;
+  card.style.animation = "";
+
+  currentSlideStarted = Date.now();
+  $("filmProgress").style.width = `${(filmIndex / memories.length) * 100}%`;
+}
+
+function startFilm() {
+  stopFilm();
+  showModal("filmModal");
+  if (!isPlaying) toggleMusic();
+
+  filmIndex = 0;
+  showFilmMoment(0);
+
+  progressTimer = setInterval(() => {
+    const elapsed = Date.now() - currentSlideStarted;
+    const slideProgress = Math.min(1, elapsed / FILM_DURATION);
+    const totalProgress = ((filmIndex + slideProgress) / memories.length) * 100;
+    $("filmProgress").style.width = `${totalProgress}%`;
+  }, 40);
+
+  filmTimer = setInterval(() => {
+    if (filmIndex >= memories.length - 1) {
+      stopFilm();
+      $("filmProgress").style.width = "100%";
+      setTimeout(returnToMenu, 500);
+    } else {
+      showFilmMoment(filmIndex + 1);
+    }
+  }, FILM_DURATION);
+}
+
+/* ---------- TYPEWRITER GÕ CHỮ CHO BỨC THƯ ---------- */
+function startTypewriter() {
+  const container = $("wishText");
+  container.textContent = "";
+  clearInterval(typeInterval);
+  let idx = 0;
+  typeInterval = setInterval(() => {
+    if (idx < RAW_WISH.length) {
+      container.textContent += RAW_WISH.charAt(idx);
+      idx++;
+    } else {
+      clearInterval(typeInterval);
+    }
+  }, 22);
+}
+
+$("fastTextBtn").addEventListener("click", () => {
+  clearInterval(typeInterval);
+  $("wishText").textContent = RAW_WISH;
+});
+
+/* ---------- XỬ LÝ SỰ KIỆN CLICK ---------- */
+
+// 1. Bấm phong bì -> Mở Modal Hộp Quà 3D
+$("openEnvelopeBtn").addEventListener("click", (e) => {
+  burstConfetti(e.clientX, e.clientY);
+  giftSvg.classList.remove("opened", "anticipate");
+  showModal("giftModal");
+});
+
+// 2. CHẠM VÀO HỘP QUÀ: Nhún lấy đà -> Nắp bật tung bay lên -> Cột sáng ma thuật -> Chuyển sang cuộn ảnh
+let isOpeningBox = false;
+$("giftStageWrapper").addEventListener("click", (e) => {
+  if (isOpeningBox) return;
+  isOpeningBox = true;
+
+  const rect = $("giftStageWrapper").getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  // Bước 1: Hộp nhún xuống lấy đà (Anticipate)
+  giftSvg.classList.add("anticipate");
+  playSound(460, "sine", 0.25);
+
+  setTimeout(() => {
+    giftSvg.classList.remove("anticipate");
+    // Bước 2: Nắp hộp bật tung bay vút lên trời
+    giftSvg.classList.add("opened");
+
+    // Bắn pháo hoa tim từ tâm hộp quà
+    burstConfetti(centerX, centerY - 20);
+
+    // Màn hình lóe sáng nhẹ
+    screenFlash.style.opacity = "0.75";
+    setTimeout(() => { screenFlash.style.opacity = "0"; }, 300);
+
+    // Bước 3: Sau 750ms chuyển sang cuộn phim ảnh bay ra mượt mà
+    setTimeout(() => {
+      startFilm();
+      isOpeningBox = false;
+    }, 750);
+  }, 350);
+});
+
+// Chạm vào bong bóng lời chúc để nổ tim
+document.querySelectorAll(".floating-bubble").forEach(bubble => {
+  bubble.addEventListener("click", (e) => {
+    burstConfetti(e.clientX, e.clientY);
+    bubble.style.animation = "none";
+    bubble.style.opacity = "0";
+    setTimeout(() => { bubble.style.animation = ""; }, 1500);
+  });
+});
+
+// Nút điều hướng cuộn ảnh
+$("skipFilmBtn").addEventListener("click", returnToMenu);
+$("replayFilmBtn").addEventListener("click", startFilm);
+
+// Mở thư & mở ảnh
+$("openWishBtn").addEventListener("click", (e) => {
+  burstConfetti(e.clientX, e.clientY);
+  showModal("wishModal");
+  startTypewriter();
+});
+
+$("openGalleryBtn").addEventListener("click", (e) => {
+  burstConfetti(e.clientX, e.clientY);
+  renderGallery();
+  showModal("galleryModal");
+});
+
+// Nút đóng chung
+document.querySelectorAll("[data-action]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const action = btn.dataset.action;
+    if (action === "close-all") hideAllModals();
+    else if (action === "film-to-menu") returnToMenu();
+    else if (action === "close-choice" || action === "close-wish") showAfterLetter();
+    else if (action === "back-to-menu" || action === "gallery-to-menu") returnToMenu();
+  });
+});
+
+// Lightbox xem ảnh to
+$("galleryGrid").addEventListener("click", e => {
+  const img = e.target.closest("img");
+  if (img) {
+    $("lightboxImage").src = img.src;
+    $("lightbox").classList.add("visible");
+  }
+});
+$("closeLightbox").addEventListener("click", () => $("lightbox").classList.remove("visible"));
+$("lightbox").addEventListener("click", e => {
+  if (e.target === $("lightbox")) $("lightbox").classList.remove("visible");
+});
+
+// Khởi chạy
+renderAmbientPhotos();
+renderGallery();
+</script>
+</body>
+</html>
